@@ -78,7 +78,7 @@ class AdminSettingsController extends ModuleAdminController
         {
             $this->generateXML();
             $this->confirmations[] = "Succesful Generation";
-             Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
+            //  Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
         }
 
 
@@ -89,7 +89,7 @@ class AdminSettingsController extends ModuleAdminController
             {
                 $this->importXMLProducts($_FILES['xmlproductfile']['tmp_name']);
             }
-             Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
+            //  Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
         }
         parent::initContent();
     }
