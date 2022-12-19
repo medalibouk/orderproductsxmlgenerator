@@ -84,8 +84,12 @@ class AdminSettingsController extends ModuleAdminController
 
         if(Tools::isSubmit('importxmlproducts'))
         {
+            $accept_ext = array('xml');
+            $file_data = explode('.', $_FILES['xmlproductfile']['name']);
+            $file_ext = end($file_data);
+	      
          
-            if(isset($_FILES['xmlproductfile']) && $_FILES['xmlproductfile']['size'] > 0)
+            if(isset($_FILES['xmlproductfile']) && in_array($file_ext, $accept_ext) && $_FILES['xmlproductfile']['size'] > 0)
             {
                 $this->importXMLProducts($_FILES['xmlproductfile']['tmp_name']);
             }
@@ -108,7 +112,7 @@ class AdminSettingsController extends ModuleAdminController
            $customer = new Customer($order->id_customer);
            $shippingAddress = new Address($order->id_address_delivery);
            $productsDetails = $order->getProducts();
-        //    print("<pre>".print_r($ordersIds,true)."</pre>");
+          
                 
 
                  $ordersInfo[$order->reference] = array(
