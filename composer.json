@@ -1,0 +1,20 @@
+{
+    "name": "medalibouk/orderproductsxmlgenerator",
+    "authors": [
+        {
+            "name": "medaliboukari",
+            "email": "contact@medalibouk.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+          "OrderProductsXmlGenerator\\Repositories\\": "repositories/",
+          "OrderProductsXmlGenerator\\Commands\\": "commands/"
+        }
+      },
+      "config": {
+          "prepend-autoloader": false
+      },
+      "type": "prestashop-module"
+}

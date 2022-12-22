@@ -1,0 +1,5 @@
+services:
+    orderproductsxmlgenerator.import_products_from_server:
+        class: OrderProductsXmlGenerator\Commands\ImportProductsFromServer
+        tags:
+            - { name: 'console.command' }
