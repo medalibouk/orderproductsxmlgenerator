@@ -1,0 +1,2 @@
+<button type="submit" name="generatexml" class="button btn btn-default"><i class="process-icon-cogs"></i>{l s='Generate XML File' mod='orderproductsxmlgenerator'}</button>
+<button type="submit" name="generatexmlwithdownloading" class="button btn btn-default"><i class="process-icon-cogs"></i>{l s='Generate XML File And Download' mod='orderproductsxmlgenerator'}</button>

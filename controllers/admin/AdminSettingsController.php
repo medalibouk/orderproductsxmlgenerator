@@ -20,30 +20,17 @@ class AdminSettingsController extends ModuleAdminController
     {
         $this->optionTitle = $this->l('Generate XML');
      
-        $pre_settings_content = '<button type="submit" name="generatexml" class="button btn btn-default"><i class="process-icon-cogs"></i>'.$this->l('Generate XML File').'</button>&nbsp;';
-        $pre_settings_content .= '<button type="submit" name="generatexmlwithdownloading" class="button btn btn-default"><i class="process-icon-cogs"></i>'.$this->l('Generate XML File And Download').'</button>&nbsp;';
-
-    
+        $pre_settings_content = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'orderproductsxmlgenerator/views/templates/admin/generate_xml.tpl');
    
-
-        $pre_settings_content2 = '<br><br>';
-        $pre_settings_content2 .= '<input type="file" name="xmlproductfile" />';
-        $pre_settings_content2 .= '<br /><br />';
-        $pre_settings_content2 .= '<button type="submit" name="importxmlproductsbyuploading" class="button btn btn-default"><i class="process-icon-save"></i>'.$this->l('Import').'</button>&nbsp;';
-        $pre_settings_content .= '<br /><br />';
+        $pre_settings_content2 = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'orderproductsxmlgenerator/views/templates/admin/xmlproductfile.tpl');
       
-
-        $pre_settings_content3 = '<br><br>';
-        $pre_settings_content3 .= '<button type="submit" name="importxmlproductsfrominterne" class="button btn btn-default"><i class="process-icon-save"></i>'.$this->l('Import from Server').'</button>&nbsp;';
-        $pre_settings_content3 .= '<br /><br />';
+        $pre_settings_content3 = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'orderproductsxmlgenerator/views/templates/admin/xmlproductfilefromserver.tpl');
 
         $standard_options = array(
             'general' => array(
                 'title' =>  $this->l('ORDERS PRODUCTS - generate XML'),
                 'image' =>   '../img/t/AdminOrderPreferences.gif',
                 'info' => $pre_settings_content,
-
-                // 'submit' => array('title' => $this->l('Update'), 'class' => 'button'),
             ),
 
             
@@ -60,8 +47,6 @@ class AdminSettingsController extends ModuleAdminController
                  'info' => $pre_settings_content3,
             ),
         );
-
-
 
        
         $this->fields_options = $standard_options;
@@ -91,14 +76,12 @@ class AdminSettingsController extends ModuleAdminController
                 {
                     Operations::generateXML();
                     $this->confirmations[] = "Succesful Generation";
-                    //  Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
                 }
 
                 if(Tools::isSubmit('generatexmlwithdownloading'))
                 {
                     Operations::generateXMLANdDownload();
                     $this->confirmations[] = "Succesful Generation";
-                    //  Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
                 }
 
 
