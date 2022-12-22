@@ -10,8 +10,6 @@ class AdminSettingsController extends ModuleAdminController
          
         parent::__construct();
         $this->bootstrap = true; 
-
-
         $this->initOptions();
     }
 
@@ -26,13 +24,16 @@ class AdminSettingsController extends ModuleAdminController
     
    
 
-    $pre_settings_content2 = '<div id="image"></div><br><br>';
-
+        $pre_settings_content2 = '<br><br>';
         $pre_settings_content2 .= '<input type="file" name="xmlproductfile" />';
         $pre_settings_content2 .= '<br /><br />';
-        $pre_settings_content2 .= '<button type="submit" name="importxmlproducts" class="button btn btn-default"><i class="process-icon-save"></i>'.$this->l('Import').'</button>&nbsp;';
+        $pre_settings_content2 .= '<button type="submit" name="importxmlproductsbyuploading" class="button btn btn-default"><i class="process-icon-save"></i>'.$this->l('Import').'</button>&nbsp;';
         $pre_settings_content .= '<br /><br />';
       
+
+        $pre_settings_content3 = '<br><br>';
+        $pre_settings_content3 .= '<button type="submit" name="importxmlproductsfrominterne" class="button btn btn-default"><i class="process-icon-save"></i>'.$this->l('Import from Server').'</button>&nbsp;';
+        $pre_settings_content3 .= '<br /><br />';
 
         $standard_options = array(
             'general' => array(
@@ -49,6 +50,12 @@ class AdminSettingsController extends ModuleAdminController
                 'title' =>  $this->l('PRODUCT - Importing Product from XML'),
                 'image' =>   '../img/t/AdminOrderPreferences.gif',
                  'info' => $pre_settings_content2,
+            ),
+
+            'xmlproductfilefromserver' => array(
+                'title' =>  $this->l('PRODUCT - Importing Product from XML On Server'),
+                'image' =>   '../img/t/AdminOrderPreferences.gif',
+                 'info' => $pre_settings_content3,
             ),
         );
 
@@ -82,17 +89,24 @@ class AdminSettingsController extends ModuleAdminController
         }
 
 
-        if(Tools::isSubmit('importxmlproducts'))
+        if(Tools::isSubmit('importxmlproductsbyuploading') || Tools::isSubmit('importxmlproductsfrominterne'))
         {
-            $accept_ext = array('xml');
-            $file_data = explode('.', $_FILES['xmlproductfile']['name']);
-            $file_ext = end($file_data);
-	      
-         
-            if(isset($_FILES['xmlproductfile']) && in_array($file_ext, $accept_ext) && $_FILES['xmlproductfile']['size'] > 0)
+           
+            if(Tools::isSubmit('importxmlproductsbyuploading'))
             {
-                $this->importXMLProducts($_FILES['xmlproductfile']['tmp_name']);
+                $accept_ext = array('xml');
+                $file_data = explode('.', $_FILES['xmlproductfile']['name']);
+                $file_ext = end($file_data);
+
+                if(isset($_FILES['xmlproductfile']) && in_array($file_ext, $accept_ext) && $_FILES['xmlproductfile']['size'] > 0)
+                {
+                    $this->importXMLProductsByUploading($_FILES['xmlproductfile']['tmp_name']);
+                }
+            }else{
+                 $this->importXMLProductsFromInterne();
             }
+    
+            
             //  Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
         }
         parent::initContent();
@@ -170,50 +184,63 @@ class AdminSettingsController extends ModuleAdminController
          
         return $_xml->asXML();
     }
+    
 
 
     public function importXMLProducts($file = null)
     {
         try
         {
-            $xml_data = simplexml_load_file($file);
-
-            for($i = 0; $i < count($xml_data); $i++)
+            
+            $xml_data =  simplexml_load_file($file);
+            $xml_data = json_decode(json_encode($xml_data), TRUE);
+            foreach ($xml_data['PRODUCT'] as $value) 
            {
-              
-   
+               
+               $manufacturer = (bool) Manufacturer::getIdByName((string) $value['ART_MANUFACTURER']) ? new Manufacturer((int) Manufacturer::getIdByName((string) $value['ART_MANUFACTURER'])) : new Manufacturer();
+               if(! (bool) Manufacturer::getIdByName($value['ART_MANUFACTURER']))
+               {
+                 $manufacturer->name = $value['ART_MANUFACTURER'];
+                 $manufacturer->active = 1;
+                 $manufacturer->save();
+               }
+               
                $productInfo = array(
-               'name' => $xml_data->product[$i]->ART_DESCRIPTION,
-               'link_rewrite' => self::slug($xml_data->product[$i]->ART_DESCRIPTION),
-               'description' => "",
-               'price' => $xml_data->product[$i]->ART_PRICEEXCLTAX,
+               'name' => $value['ART_DESCRIPTION'],
+               'link_rewrite' => self::slug($value['ART_DESCRIPTION']),
+               'description' => $value['ART_DESCRIPTION'],
+               'price' => $value['ART_PRICEEXCLTAX'],
                'state' => 1,
-               'reference' => (string) $xml_data->product[$i]->ART_NUMBER,
+               'reference' => (string) $value['ART_NUMBER'],
                'active' => 1,
                'available_for_order' => 1,
                'show_price' => 1,
-               'id_manufacturer' =>  0,
+               'id_manufacturer' =>  $manufacturer->id,
                'id_category_default' => 2,
                );
-   
-               $product = new Product();
-               foreach ($productInfo as $key => $value) 
+
+               $idProduct = Product::getIdByReference($productInfo['reference']);
+               $product = (bool) $idProduct ? new Product($idProduct) : new Product();
+               if(!(bool) $idProduct)
                {
-                 $product->{$key} = $value;
+                foreach ($productInfo as $key => $value) 
+                {
+                  $product->{$key} = $value;
+                }
+                $product->save();
                }
-   
-               $product->save();
+              
    
                $id_stock_available = StockAvailable::getStockAvailableIdByProductId($product->id, 0);
                $stock = new StockAvailable($id_stock_available);
                if(Validate::isLoadedObject($stock))
                {
-                   $stock->quantity = (int) $xml_data->product[$i]->ART_STOCK;
+                   $stock->quantity = (int) $value['ART_STOCK'];
                    $stock->save();
                 }
                
            }
-           $this->confirmations[] = "Succesful Importation";
+           $this->confirmations[] = "Successful Importation";
         }
         catch (Exception $e)
         {
@@ -222,6 +249,18 @@ class AdminSettingsController extends ModuleAdminController
         }
 
         
+
+    }
+
+    public function importXMLProductsByUploading($file = null)
+    {
+        $this->importXMLProducts($file);
+    }
+
+    public function importXMLProductsFromInterne()
+    {
+        $file = _PS_MODULE_DIR_ . 'orderproductsxmlgenerator/tmpxml/file.xml';
+        $this->importXMLProducts($file);
 
     }
 
