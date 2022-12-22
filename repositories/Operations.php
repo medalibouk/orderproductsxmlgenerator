@@ -23,8 +23,9 @@ class Operations
        $id_order_state = (int) Configuration::get('ORDERPRODUCTSXMLGENERATOR_ORDER_STATE');
        $ordersIds = Order::getOrderIdsByStatus($id_order_state);
        $ordersInfo = array();
-
+       $iter = 0;
        foreach ($ordersIds as $orderId) {
+           
            $order = new Order($orderId);
            $customer = new Customer($order->id_customer);
            $shippingAddress = new Address($order->id_address_delivery);
@@ -32,7 +33,7 @@ class Operations
           
                 
 
-                 $ordersInfo[$order->reference] = array(
+                 $ordersInfo['order_'.$iter] = array(
                     'customer_name' => $customer->firstname. ' ' . $customer->lastname,
                     'total_amount_paid_with_tax' => $order->total_paid_tax_incl,
                     'total_amount_paid_without_tax' => $order->total_paid_tax_excl,
@@ -41,7 +42,7 @@ class Operations
                  );
 
                  foreach ($productsDetails as $productsDetail) {
-                    $ordersInfo[$order->reference]['rows'][] = array(
+                    $ordersInfo['order_'.$iter]['rows'][] = array(
                          'product_name' => $productsDetail['product_name'],
                          'product_reference' => $productsDetail['product_reference'],
                          'amount_ordered' => $productsDetail['product_quantity'],
@@ -50,7 +51,7 @@ class Operations
 
                     );
                  }
-                 
+                 $iter ++;
        }
 
 
@@ -177,7 +178,12 @@ class Operations
             if (is_array($v)) {
                  
                 // Call function for nested array
-                self::arrayToXml($v, $k, $_xml->addChild($k));
+                if(str_contains($k, 'order'))
+                {
+                    self::arrayToXml($v, $k, $_xml->addChild("order"));
+                }else{
+                    self::arrayToXml($v, $k, $_xml->addChild($k));
+                }
                 }
                  
             else {
