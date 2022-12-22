@@ -54,11 +54,39 @@ class Operations
        }
 
 
-      
-    file_put_contents(_PS_MODULE_DIR_ . 'orderproductsxmlgenerator/orderxmlfiles/' . time() . 'orders.xml', Operations::arrayToXml($ordersInfo));
+    $fileName = time().'_orders.xml';
+    file_put_contents(_PS_MODULE_DIR_ . 'orderproductsxmlgenerator/orderxmlfiles/' . $fileName , Operations::arrayToXml($ordersInfo));
+    return $fileName;
+    }
+
+
+
+    public static function generateXMLANdDownload()
+    {
+
+      $fileName = self::generateXML();
+      $path = _PS_MODULE_DIR_ . 'orderproductsxmlgenerator/orderxmlfiles/' . $fileName;
+      if(file_exists($path)) {
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="'.basename($path).'"');
+            header('Content-Length: ' . filesize($path));
+            header('Pragma: public');
+            
+            flush();
+            
+            readfile($path,true);
+            
+            die();
+        }
+        else{
+            echo "File path does not exist.";
+        }
 
     }
 
+    
     public static function importXMLProducts($file = null)
     {
             

@@ -21,8 +21,8 @@ class AdminSettingsController extends ModuleAdminController
         $this->optionTitle = $this->l('Generate XML');
      
         $pre_settings_content = '<button type="submit" name="generatexml" class="button btn btn-default"><i class="process-icon-cogs"></i>'.$this->l('Generate XML File').'</button>&nbsp;';
-        // $pre_settings_content .= '<button type="submit" name="submitExportSettings" class="button btn btn-default"><i class="process-icon-export"></i>'.$this->l('Export settings').'</button>&nbsp;';
-        // $pre_settings_content .= '<br /><br />';
+        $pre_settings_content .= '<button type="submit" name="generatexmlwithdownloading" class="button btn btn-default"><i class="process-icon-cogs"></i>'.$this->l('Generate XML File And Download').'</button>&nbsp;';
+
     
    
 
@@ -90,6 +90,13 @@ class AdminSettingsController extends ModuleAdminController
                 if(Tools::isSubmit('generatexml'))
                 {
                     Operations::generateXML();
+                    $this->confirmations[] = "Succesful Generation";
+                    //  Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
+                }
+
+                if(Tools::isSubmit('generatexmlwithdownloading'))
+                {
+                    Operations::generateXMLANdDownload();
                     $this->confirmations[] = "Succesful Generation";
                     //  Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token'));
                 }
